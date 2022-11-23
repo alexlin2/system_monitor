@@ -178,7 +178,11 @@ class CPUMonitor():
         diag_msgs = []
 
         already_read = []
-        core_temps = psutil.sensors_temperatures()['coretemp']
+        try:
+            core_temps = psutil.sensors_temperatures()['coretemp']
+        except KeyError:
+            # For jetson
+            core_temps = psutil.sensors_temperatures()['thermal-fan-est']
         for core_temp in core_temps:
             label = core_temp.label
             tmp = core_temp.current
