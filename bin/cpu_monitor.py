@@ -124,7 +124,7 @@ class CPUMonitor():
 
         # CPU stats
         self._temp_stat = DiagnosticStatus()
-        self._temp_stat.name = 'CPU Temperature (%s)' % diag_hostname
+        self._temp_stat.name = 'CPU Temperature'
         self._temp_stat.level = 1
         self._temp_stat.hardware_id = hostname
         self._temp_stat.message = 'No Data'
@@ -132,7 +132,7 @@ class CPUMonitor():
                                    KeyValue(key = 'Time Since Last Update', value = 'N/A') ]
 
         self._usage_stat = DiagnosticStatus()
-        self._usage_stat.name = 'CPU Usage (%s)' % diag_hostname
+        self._usage_stat.name = 'CPU Usage'
         self._usage_stat.level = 1
         self._usage_stat.hardware_id = hostname
         self._usage_stat.message = 'No Data'

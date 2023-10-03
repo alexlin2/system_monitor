@@ -151,7 +151,7 @@ class hdd_monitor():
         self._temp_timer = None
         if not self._no_temp:
           self._temp_stat = DiagnosticStatus()
-          self._temp_stat.name = "HDD Temperature (%s)" % diag_hostname
+          self._temp_stat.name = "HDD Temperature"
           self._temp_stat.level = DiagnosticStatus.ERROR
           self._temp_stat.hardware_id = hostname
           self._temp_stat.message = 'No Data'
@@ -164,7 +164,7 @@ class hdd_monitor():
         self._usage_stat = DiagnosticStatus()
         self._usage_stat.level = DiagnosticStatus.ERROR
         self._usage_stat.hardware_id = hostname
-        self._usage_stat.name = 'HDD Usage (%s)' % diag_hostname
+        self._usage_stat.name = 'HDD Usage'
         self._usage_stat.values = [ KeyValue(key = 'Update Status', value = 'No Data' ),
                                     KeyValue(key = 'Time Since Last Update', value = 'N/A') ]
         self.check_disk_usage()

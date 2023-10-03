@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 import sys
 import rospy
+import re
 from diagnostic_msgs.msg import DiagnosticArray
 from system_monitor.msg import *
 
@@ -30,11 +31,11 @@ class Monitor():
             inter = Interface()
             inter.name = status.values[2+10*i].value
             inter.state = status.values[3+10*i].value
-            inter.input = float(status.values[4+10*i].value[:-6])
-            inter.output = float(status.values[5+10*i].value[:-6])
+            inter.input = float(status.values[4+10*i].value[:-8])
+            inter.output = float(status.values[5+10*i].value[:-8])
             inter.mtu = int(status.values[6+10*i].value)
-            inter.received = float(status.values[7+10*i].value)
-            inter.transmitted = float(status.values[8+10*i].value)
+            inter.input_percentage = float(status.values[7+10*i].value[:-1])
+            inter.output_percentage = float(status.values[8+10*i].value[:-1])
             inter.collisions = int(status.values[9+10*i].value)
             inter.rxError = int(status.values[10+10*i].value)
             inter.txError = int(status.values[11+10*i].value)
@@ -92,31 +93,24 @@ class Monitor():
         self._diag_cpu_usa.name = status.name
         self._diag_cpu_usa.message = status.message
         self._diag_cpu_usa.hardware_id = status.hardware_id
+        usage_dict = dict(zip([x.key for x in status.values], [x.value for x in status.values]))
         aux_usa = CPUUsageStatus()
-        len_values = len(status.values)
-        num_cores = (len_values - 6)/6
-        num_cores = int(num_cores)
-        aux_usa.status = status.values[0].value
-        aux_usa.time = float(status.values[1].value)
-        aux_usa.load_status = status.values[len_values - 4].value
-        aux_usa.load_avg1 = float(status.values[len_values - 3].value[:-1])
-        aux_usa.load_avg5 = float(status.values[len_values - 2].value[:-1])
-        aux_usa.load_avg15 = float(status.values[len_values - 1].value[:-1])
+        num_cores = len([x for x in usage_dict.keys() if (x.startswith('Core') and x.endswith('Status'))])
+        aux_usa.status = usage_dict['Update Status']
+        aux_usa.time = float(usage_dict['Time Since Update'])
+        aux_usa.load_status = usage_dict['Load Average Status']
+        aux_usa.load_avg1 = float(re.sub('[^0-9.]', '', usage_dict['Load Average (1min)']))
+        aux_usa.load_avg5 = float(re.sub('[^0-9.]', '', usage_dict['Load Average (5min)']))
+        aux_usa.load_avg15 = float(re.sub('[^0-9.]', '', usage_dict['Load Average (15min)']))
         for i in range(0, num_cores):
             core = CoreUsage()
             core.id = i
-            core.speed = float(status.values[i +2].value[:-3])
-            core.status = status.values[2 + num_cores + 5*i].value
-            if sys.version_info.major == 3:
-                core.system = float(status.values[3 + num_cores + 5*i].value[:-3])
-                core.user = float(status.values[4 + num_cores + 5*i].value[:-3])
-                core.nice = float(status.values[5 + num_cores + 5*i].value[:-3])
-                core.idle = float(status.values[6 + num_cores + 5*i].value[:-3].replace(",","."))
-            else:
-                core.system = float(status.values[3 + num_cores + 5*i].value[:-1])
-                core.user = float(status.values[4 + num_cores + 5*i].value[:-1])
-                core.nice = float(status.values[5 + num_cores + 5*i].value[:-1])
-                core.idle = float(status.values[6 + num_cores + 5*i].value[:-1].replace(",","."))
+            core.speed = float(re.sub('[^0-9.]', '', usage_dict['Core %d Clock Speed' % i]))
+            core.status = usage_dict['Core %d Status' % i]
+            core.system = float(re.sub('[^0-9.]', '', usage_dict['Core %d System' % i]))
+            core.user = float(re.sub('[^0-9.]', '', usage_dict['Core %d User' % i]))
+            core.nice = float(re.sub('[^0-9.]', '', usage_dict['Core %d Nice' % i]))
+            core.idle = float(re.sub('[^0-9.]', '', usage_dict['Core %d Idle' % i]))
             aux_usa.cores.append(core)
         self._diag_cpu_usa.status = aux_usa
         #self.publish_info()

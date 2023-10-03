@@ -111,7 +111,7 @@ class NetMonitor():
     self._net_capacity = rospy.get_param('~net_capacity', net_capacity)
     self._usage_timer = None
     self._usage_stat = DiagnosticStatus()
-    self._usage_stat.name = 'Network Usage (%s)' % diag_hostname
+    self._usage_stat.name = 'Network Usage'
     self._usage_stat.level = 1
     self._usage_stat.hardware_id = hostname
     self._usage_stat.message = 'No Data'
@@ -165,11 +165,11 @@ class NetMonitor():
           if ifacematch and (cmd_out == 'down' or cmd_out == 'dormant'):
             level = DiagnosticStatus.ERROR
         values.append(KeyValue(key = 'Input Traffic',
-          value = str(float(kb_in[i]) / 1024) + " (MB/s)"))
+          value = str(float(kb_in[i]) / 1024 * 8) + " (MBit/s)"))
         values.append(KeyValue(key = 'Output Traffic',
-          value = str(float(kb_out[i]) / 1024) + " (MB/s)"))
-        net_usage_in = float(kb_in[i]) / 1024 / self._net_capacity
-        net_usage_out = float(kb_out[i]) / 1024 / self._net_capacity
+          value = str(float(kb_out[i]) / 1024 * 8) + " (MBit/s)"))
+        net_usage_in = float(kb_in[i]) / 1024 * 8 / self._net_capacity
+        net_usage_out = float(kb_out[i]) / 1024 * 8 / self._net_capacity
         if net_usage_in > self._net_level_warn or\
           net_usage_out > self._net_level_warn:
           level = DiagnosticStatus.WARN
@@ -178,12 +178,12 @@ class NetMonitor():
           values.append(KeyValue(key = 'MTU', value = cmd_out))
         (retcode, cmd_out) = get_sys_net_stat(ifaces[i], 'rx_bytes')
         if retcode == 0:
-          values.append(KeyValue(key = 'Total received MB',
-            value = str(float(cmd_out) / 1024 / 1024)))
+          values.append(KeyValue(key = 'Input Percentage',
+            value = str(round(float(net_usage_in * 100), 2)) + "%"))
         (retcode, cmd_out) = get_sys_net_stat(ifaces[i], 'tx_bytes')
         if retcode == 0:
-          values.append(KeyValue(key = 'Total transmitted MB',
-            value = str(float(cmd_out) / 1024 / 1024)))
+          values.append(KeyValue(key = 'Output percentage',
+            value = str(round(float(net_usage_out * 100), 2)) + "%"))
         (retcode, cmd_out) = get_sys_net_stat(ifaces[i], 'collisions')
         if retcode == 0:
           values.append(KeyValue(key = 'Collisions', value = cmd_out))
