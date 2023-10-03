@@ -2,10 +2,11 @@
   <arg name="machine_name" default="$(optenv HOSTNAME localhost)"/>
   <arg name="config_file" default="$(find system_monitor)/config/system_monitor.yaml"/>
   <arg name="output" default="log"/>
+  <arg name="use_cpu_monitor" default="true"/>
 
   <group ns="system_monitor/$(arg machine_name)">
     <node name="cpu_monitor" pkg="system_monitor" type="cpu_monitor.py"
-      output="$(arg output)" respawn="true"/>
+      output="$(arg output)" respawn="true" if="$(arg use_cpu_monitor)"/>
     <node name="hdd_monitor" pkg="system_monitor" type="hdd_monitor.py"
       output="$(arg output)" respawn="true"/>
     <node name="mem_monitor" pkg="system_monitor" type="mem_monitor.py"
